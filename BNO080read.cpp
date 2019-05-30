@@ -61,7 +61,7 @@ void sendPacket(int fd)
   return;
 }
 
-int main(int argc, char **argv)
+int main()
 {
   int fd = open_port();
 
@@ -84,24 +84,26 @@ int main(int argc, char **argv)
   PortSettings.c_cflag &= ~CRTSCTS;
   PortSettings.c_cflag |= CREAD | CLOCAL;
   PortSettings.c_iflag &= ~(IXON | IXOFF | IXANY);
-  PortSettings.c_iflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+  PortSettings.c_iflag |= ICANON;
 
   PortSettings.c_oflag &= ~OPOST;
-
-  PortSettings.c_cc[VMIN] = 10;
-  PortSettings.c_cc[VTIME] = 10;
 
   tcsetattr(fd, TCSANOW, &PortSettings);
   //std::cout << "set attr\n";
 
   sendPacket(fd);
 
-  char read_buffer[10];
+  char read_buffer[256];
   int bytes_read = 0;
 
-  bytes_read = read(fd, &read_buffer, 10);
+  bytes_read = read(fd, &read_buffer, 256);
 
   std::cout << "# of Bytes Read: " << bytes_read << '\n';
+
+  for(int i = 0; i < bytes_read; i++)
+  {
+    printf("%02X\n", read_buffer[i]);
+  }
 
   close(fd);
   return 0;
